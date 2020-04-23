@@ -2,9 +2,22 @@
 <html>
 <head>
 	<title></title>
+	<script type="text/javascript" src="{{ url_for('static', filename='index.js') }}"></script>
 </head>
 <body>
-	{% block content %}
-	{% endblock %}
+	<header>
+		<form id="header-form">
+			<input type="text" name="">
+			<button disabled></button>
+		</form>
+	</header>
+	<main>
+		{% for channel in channels %}
+		<div>
+			<p>{{channel.name}}</p>
+			<button>Open</button>
+		</div>
+		{% endfor %}
+	</main>
 </body>
 </html>
