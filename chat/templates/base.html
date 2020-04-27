@@ -11,10 +11,10 @@
 			<button disabled></button>
 		</form>
 	</header>
-	<main>
+	<main id="channel-list">
 		{% for channel in channels %}
 		<div>
-			<p>{{channel.name}}</p>
+			<h2>{{channel.name}}</h2>
 			<button>Open</button>
 		</div>
 		{% endfor %}
