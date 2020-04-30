@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-	
+	document.getElementById('channel-list').addEventListener('click', openCloseChannel);
 
 });
 
@@ -74,6 +74,7 @@ function createNewChannel(event) {
 
 				name.textContent = event.target.previousElementSibling.value;
 				openButton.textContent = 'Open';
+				openButton.dataset.open = 'false';
 				event.target.previousElementSibling.value = '';
 
 				wrapper.append(name);
@@ -97,3 +98,31 @@ function createNewChannel(event) {
 
 
 
+function openCloseChannel(event) {
+	if(event.target.tagName == 'BUTTON') {
+
+		const toggleButton = event.target;
+
+		if (toggleButton.dataset.open == 'false') {
+			// Open a channel. Loads an HTML block and put into DOM
+			const channelName = toggleButton.previousElementSibling.textContent;
+			fetch(`/${channelName}`)
+				.then(response => response.text())
+				.then(result => {
+					const wrapper = document.createElement('div');
+					wrapper.innerHTML = result;
+					toggleButton.after(wrapper);
+					toggleButton.dataset.open = 'true';
+					toggleButton.textContent = 'Close';
+					localStorage.setItem('channel', channelName);
+				});
+		} else if (toggleButton.dataset.open == 'true') {
+			// Close a channel
+			toggleButton.nextElementSibling.remove();
+			toggleButton.dataset.open = 'false';
+			toggleButton.textContent = 'Open';
+			localStorage.removeItem('channel');
+		}
+
+	}
+}
