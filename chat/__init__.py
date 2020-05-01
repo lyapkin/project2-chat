@@ -9,25 +9,19 @@ socketio = SocketIO(app)
 
 
 
-channels = [{
-	'name': 'a',
-	'messages': [{
-				'name': 'anna',
-				'text': 'hello',
-				'time': '01:24'
-				}]
-}]
+channels = {
+	'a': [{'username': 'anna', 'text': 'hello', 'time': '01:24'}]
+}
 
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
 	if request.method == 'POST':
 		channel_name = request.data.decode('utf-8')
-		for channel in channels:
-			if channel['name'] == channel_name:
-				return jsonify(error='The channel with this name exists, choose another name')
+		if channel_name in channels:
+			return jsonify(error='The channel with this name exists, choose another name')
 		
-		channels.append({'name': channel_name, 'messages': []})
+		channels[channel_name] = []
 		return jsonify(success='The channel is created')
 	
 	return render_template('base.html', channels=channels)
@@ -35,7 +29,6 @@ def index():
 
 @app.route("/<string:channel_name>")
 def open_channel(channel_name):
-	for channel in channels:
-		if channel['name'] == channel_name:
-			return render_template('chat.html', messages=channel['messages'])
-	return ''
+	messages = channels[channel_name]
+	
+	return render_template('chat.html', messages=messages)

@@ -2,6 +2,7 @@
 <html>
 <head>
 	<title></title>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
 	<script type="text/javascript" src="{{ url_for('static', filename='index.js') }}"></script>
 </head>
 <body>
@@ -14,7 +15,7 @@
 	<main id="channel-list">
 		{% for channel in channels %}
 		<div>
-			<h2>{{channel.name}}</h2>
+			<h2>{{channel}}</h2>
 			<button data-open="false">Open</button>
 		</div>
 		{% endfor %}
