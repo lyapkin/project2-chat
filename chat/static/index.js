@@ -44,6 +44,11 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	});
 
+
+	const channel = localStorage.getItem('channel');
+	if (channel) {
+		document.querySelector(`[data-channel-name="${channel}"]`).dispatchEvent(new Event('click', {bubbles: true}));
+	}
 	
 });
 
@@ -113,6 +118,7 @@ function createNewChannel(event) {
 				name.textContent = event.target.previousElementSibling.value;
 				openButton.textContent = 'Open';
 				openButton.dataset.open = 'false';
+				openButton.dataset.channelName = event.target.previousElementSibling.value;
 				event.target.previousElementSibling.value = '';
 
 				wrapper.append(name);
