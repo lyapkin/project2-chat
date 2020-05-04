@@ -29,6 +29,26 @@ def index():
 
 @app.route("/<string:channel_name>")
 def open_channel(channel_name):
+	if channel_name not in channels:
+		return ''
 	messages = channels[channel_name]
 	
 	return render_template('chat.html', messages=messages)
+
+
+@socketio.on('new message')
+def handle_message(data):
+	username = data['username']
+	text = data['text']
+	date = data['date']
+	channel_name = data['channel_name']
+	
+	message = {
+		'username': username,
+		'text': text,
+		'time': date
+	}
+
+	channels[channel_name].append(message)
+
+	emit(f'announce message {channel_name}', {'username': username, 'text': text, 'date': date}, broadcast=True)

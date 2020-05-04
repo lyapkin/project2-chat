@@ -1,11 +1,15 @@
-{% for message in messages %}
 <div>
-	<h3>{{message.name}}</h3>
-	<p>{{message.text}}</p>
-	<time>{{message.time}}</time>
+	<div id="messages">
+		{% for message in messages %}
+		<div>
+			<h3>{{message.username}}</h3>
+			<p>{{message.text}}</p>
+			<time>{{message.time}}</time>
+		</div>
+		{% endfor %}
+	</div>
+	<form name="messageForm">
+		<textarea name="content"></textarea>
+		<button name="sendButton">Send</button>
+	</form>
 </div>
-{% endfor %}
-<form>
-	<textarea></textarea>
-	<button>Send</button>
-</form>

@@ -1,5 +1,7 @@
-document.addEventListener('DOMContentLoaded', () => {
+const socket = io(location.protocol + '//' + document.domain + ':' + location.port, {autoConnect: false});
 
+document.addEventListener('DOMContentLoaded', () => {
+	
 	let headerInput = document.getElementById('header-form').firstElementChild;
 	
 	// Define what kind the header form is.
@@ -23,6 +25,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	document.getElementById('channel-list').addEventListener('click', openCloseChannel);
 
+
+
+	socket.on('connect', () => {
+		const form = document.forms.messageForm;
+		
+		form.sendButton.addEventListener('click', (event) => {
+			const text = form.content.value;
+			const username = localStorage.getItem('username');
+			const date = Date.now();
+			const channelName = form.parentElement.parentElement.firstElementChild.textContent;
+
+			socket.emit('new message', {username, text, date, channel_name: channelName});
+
+			form.content.value = '';
+
+			event.preventDefault();
+		});
+	});
+
+	
 });
 
 
@@ -54,6 +76,22 @@ function defineUsernameInput(usernameInput) {
 		event.preventDefault();
 	},
 	{once: true});
+}
+
+
+
+function openChannel(openButton, channelNode) {
+	openButton.insertAdjacentHTML('afterend', channelNode);
+	openButton.dataset.open = 'true';
+	openButton.textContent = 'Close';
+}
+
+
+
+function closeChannel(closeButton) {
+	closeButton.nextElementSibling.remove();
+	closeButton.dataset.open = 'false';
+	closeButton.textContent = 'Open';
 }
 
 
@@ -100,29 +138,41 @@ function createNewChannel(event) {
 
 function openCloseChannel(event) {
 	if(event.target.tagName == 'BUTTON') {
-
+	
 		const toggleButton = event.target;
+		const channelName = toggleButton.previousElementSibling.textContent;
 
 		if (toggleButton.dataset.open == 'false') {
 			// Open a channel. Loads an HTML block and put into DOM
-			const channelName = toggleButton.previousElementSibling.textContent;
 			fetch(`/${channelName}`)
 				.then(response => response.text())
-				.then(result => {
-					const wrapper = document.createElement('div');
-					wrapper.innerHTML = result;
-					toggleButton.after(wrapper);
-					toggleButton.dataset.open = 'true';
-					toggleButton.textContent = 'Close';
+				.then(channelNode => {
+					openChannel(toggleButton, channelNode);
+
+					// To remember in which channel a user was when the page was closed 
 					localStorage.setItem('channel', channelName);
+
+					socket.connect();
+
+					socket.on(`announce message ${channelName}`, receiveMessage);
+
 				});
 		} else if (toggleButton.dataset.open == 'true') {
 			// Close a channel
-			toggleButton.nextElementSibling.remove();
-			toggleButton.dataset.open = 'false';
-			toggleButton.textContent = 'Open';
+			socket.disconnect();
+			socket.removeListener(`announce message ${channelName}`, receiveMessage);
+			closeChannel(toggleButton);
 			localStorage.removeItem('channel');
 		}
 
 	}
+}
+
+
+
+function receiveMessage(data) {
+	// Put a received message into DOM
+	const div = document.createElement('div');
+	div.innerHTML = `<h3>${data.username}</h3><p>${data.text}</p><time>${data.date}</time>`;
+	document.getElementById('messages').append(div);
 }
