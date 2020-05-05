@@ -12,14 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 
-	// Turn on/off the header form button depending on the length of its value
-	headerInput.addEventListener('input', function() {
-		if (this.value.length > 0) {
-			this.nextElementSibling.disabled = false;
-		} else {
-			this.nextElementSibling.disabled = true;
-		}
-	});
+	// Turn on/off the header form button depending on the length of the form's value
+	headerInput.addEventListener('input', switchButton);
 
 
 
@@ -28,7 +22,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 	socket.on('connect', () => {
+		let timerId;
+
 		const form = document.forms.messageForm;
+
+		// Turn on/off the message form button depending on the length of the form's value
+		form.content.addEventListener('input', switchButton);
 		
 		form.sendButton.addEventListener('click', (event) => {
 			const text = form.content.value;
@@ -36,10 +35,18 @@ document.addEventListener('DOMContentLoaded', () => {
 			const date = Date.now();
 			const channelName = form.parentElement.parentElement.firstElementChild.textContent;
 
-			socket.emit('new message', {username, text, date, channel_name: channelName});
+			if (username) {
+				socket.emit('new message', {username, text, date, channel_name: channelName});
 
-			form.content.value = '';
-
+				form.content.value = '';
+				form.sendButton.disabled = true;
+			} else {
+				clearTimeout(timerId);
+				const flash = form.lastElementChild;
+				flash.hidden = false;
+				timerId = setTimeout(() => flash.hidden = true, 4000);
+			}
+			
 			event.preventDefault();
 		});
 	});
@@ -181,4 +188,14 @@ function receiveMessage(data) {
 	const div = document.createElement('div');
 	div.innerHTML = `<h3>${data.username}</h3><p>${data.text}</p><time>${data.date}</time>`;
 	document.getElementById('messages').append(div);
+}
+
+
+// Turn on/off a relative form button depending on the length of the form's value
+function switchButton() {
+	if (this.value.length > 0) {
+		this.nextElementSibling.disabled = false;
+	} else {
+		this.nextElementSibling.disabled = true;
+	}
 }
