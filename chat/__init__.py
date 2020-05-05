@@ -49,6 +49,9 @@ def handle_message(data):
 		'time': date
 	}
 
+	if len(channels[channel_name]) > 99:
+		channels[channel_name].pop(0)
+
 	channels[channel_name].append(message)
 
 	emit(f'announce message {channel_name}', {'username': username, 'text': text, 'date': date}, broadcast=True)
