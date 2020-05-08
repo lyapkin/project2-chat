@@ -32,11 +32,10 @@ document.addEventListener('DOMContentLoaded', () => {
 		form.sendButton.addEventListener('click', (event) => {
 			const text = form.content.value;
 			const username = localStorage.getItem('username');
-			const date = Date.now();
 			const channelName = form.parentElement.parentElement.firstElementChild.textContent;
 
 			if (username) {
-				socket.emit('new message', {username, text, date, channel_name: channelName});
+				socket.emit('new message', {username, text, channel_name: channelName});
 
 				form.content.value = '';
 				form.sendButton.disabled = true;
@@ -96,6 +95,12 @@ function openChannel(openButton, channelNode) {
 	openButton.insertAdjacentHTML('afterend', channelNode);
 	openButton.dataset.open = 'true';
 	openButton.textContent = 'Close';
+
+	// Makes time readable
+	const times = openButton.nextElementSibling.getElementsByTagName('time');
+	for (let item of times) {
+		item.textContent = new Date(item.textContent).toTimeString().slice(0, 5);
+	}
 }
 
 
@@ -184,9 +189,11 @@ function openCloseChannel(event) {
 
 
 function receiveMessage(data) {
+	const date = new Date(data.date).toTimeString().slice(0, 5);
+
 	// Put a received message into DOM
 	const div = document.createElement('div');
-	div.innerHTML = `<h3>${data.username}</h3><p>${data.text}</p><time>${data.date}</time>`;
+	div.innerHTML = `<h3>${data.username}</h3><p>${data.text}</p><time>${date}</time>`;
 	document.getElementById('messages').append(div);
 }
 

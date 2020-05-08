@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timezone
 
 from flask import Flask, render_template, request, jsonify
 from flask_socketio import SocketIO, emit
@@ -10,7 +11,7 @@ socketio = SocketIO(app)
 
 
 channels = {
-	'a': [{'username': 'anna', 'text': 'hello', 'time': '01:24'}]
+	'a': []
 }
 
 
@@ -40,8 +41,8 @@ def open_channel(channel_name):
 def handle_message(data):
 	username = data['username']
 	text = data['text']
-	date = data['date']
 	channel_name = data['channel_name']
+	date = datetime.now(timezone.utc).isoformat()
 	
 	message = {
 		'username': username,
