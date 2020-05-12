@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		form.sendButton.addEventListener('click', (event) => {
 			const text = form.content.value;
 			const username = localStorage.getItem('username');
-			const channelName = form.parentElement.parentElement.firstElementChild.textContent;
+			const channelName = form.parentElement.parentElement.firstElementChild.firstElementChild.textContent;
 
 			if (username) {
 				socket.emit('new message', {username, text, channel_name: channelName});
@@ -92,22 +92,26 @@ function defineUsernameInput(usernameInput) {
 
 
 function openChannel(openButton, channelNode) {
-	openButton.insertAdjacentHTML('afterend', channelNode);
+	openButton.parentElement.insertAdjacentHTML('afterend', channelNode);
 	openButton.dataset.open = 'true';
+	openButton.closest('.channel').classList.add('open');
 	openButton.textContent = 'Close';
+	const meesages = openButton.parentElement.parentElement.lastElementChild;
 
 	// Makes time readable
-	const times = openButton.nextElementSibling.getElementsByTagName('time');
+	const times = messages.getElementsByTagName('time');
 	for (let item of times) {
 		item.textContent = new Date(item.textContent).toTimeString().slice(0, 5);
 	}
+	messages.scrollTop = messages.scrollHeight;
 }
 
 
 
 function closeChannel(closeButton) {
-	closeButton.nextElementSibling.remove();
+	closeButton.parentElement.nextElementSibling.remove();
 	closeButton.dataset.open = 'false';
+	closeButton.closest('.channel').classList.remove('open');
 	closeButton.textContent = 'Open';
 }
 
@@ -117,15 +121,18 @@ function closeChannel(closeButton) {
 function createNewChannel(event) {		
 	fetch('/', {
 		method: 'POST',
-		body: event.target.previousElementSibling.value
+		body: event.target.previousElementSibling.value.trim()
 	})
 		.then(response => response.json())
 		.then(result => {
 			if ('success' in result) {
 				// Add the new channel node
-				let wrapper = document.createElement('div');
-				let name = document.createElement('h2');
-				let openButton = document.createElement('button');
+				const channel = document.createElement('div');
+				channel.className = 'channel';
+				const channelHeader = document.createElement('div');
+				channelHeader.className = 'channel__header';
+				const name = document.createElement('h2');
+				const openButton = document.createElement('button');
 
 				name.textContent = event.target.previousElementSibling.value;
 				openButton.textContent = 'Open';
@@ -133,15 +140,17 @@ function createNewChannel(event) {
 				openButton.dataset.channelName = event.target.previousElementSibling.value;
 				event.target.previousElementSibling.value = '';
 
-				wrapper.append(name);
-				wrapper.append(openButton);
-
-				document.querySelector('main').prepend(wrapper);
+				channelHeader.append(name);
+				channelHeader.append(openButton);
+				channel.append(channelHeader);
+				
+				document.querySelector('#channel-list').prepend(channel);
 
 				openButton.dispatchEvent(new Event('click', {bubbles: true}));
 			} else {
 				// Show the error
 				let error = document.createElement('div');
+				error.className = 'flash';
 				error.textContent = result.error;
 				document.querySelector('header').prepend(error);
 				setTimeout(() => error.remove(), 5000);
@@ -192,9 +201,12 @@ function receiveMessage(data) {
 	const date = new Date(data.date).toTimeString().slice(0, 5);
 
 	// Put a received message into DOM
-	const div = document.createElement('div');
-	div.innerHTML = `<h3>${data.username}</h3><p>${data.text}</p><time>${date}</time>`;
-	document.getElementById('messages').append(div);
+	const message = document.createElement('div');
+	message.className = 'message';
+	message.innerHTML = `<h3>${data.username}</h3><p>${data.text}</p><time>${date}</time>`;
+	const messages = document.getElementById('messages');
+	messages.append(message);
+	messages.scrollTop = messages.scrollHeight;
 }
 
 

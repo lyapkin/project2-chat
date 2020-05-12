@@ -1,24 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<title></title>
 	<script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
 	<script type="text/javascript" src="{{ url_for('static', filename='index.js') }}"></script>
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 	<header>
-		<form id="header-form">
-			<input type="text" name="">
-			<button disabled></button>
-		</form>
-	</header>
-	<main id="channel-list">
-		{% for channel in channels %}
-		<div>
-			<h2>{{channel}}</h2>
-			<button data-open="false" data-channel-name="{{channel}}">Open</button>
+		<div class="container">
+			<form id="header-form">
+				<input type="text" name="" class="header__input">
+				<button class="header__button" disabled></button>
+			</form>
 		</div>
-		{% endfor %}
+	</header>
+	<main>
+		<div id="channel-list" class="container">
+			{% for channel in channels %}
+			<div class="channel">
+				<div class="channel__header">
+					<h2>{{channel}}</h2>
+					<button data-open="false" data-channel-name="{{channel}}">Open</button>
+				</div>
+			</div>
+			{% endfor %}
+		</div>
 	</main>
 </body>
 </html>
