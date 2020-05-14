@@ -16,11 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	headerInput.addEventListener('input', switchButton);
 
 
-
-	document.getElementById('channel-list').addEventListener('click', openCloseChannel);
-
-
-
+	
 	socket.on('connect', () => {
 		let timerId;
 
@@ -49,6 +45,11 @@ document.addEventListener('DOMContentLoaded', () => {
 			event.preventDefault();
 		});
 	});
+
+
+
+	document.getElementById('channel-list').addEventListener('click', openCloseChannel);
+
 
 
 	const channel = localStorage.getItem('channel');
@@ -96,13 +97,15 @@ function openChannel(openButton, channelNode) {
 	openButton.dataset.open = 'true';
 	openButton.closest('.channel').classList.add('open');
 	openButton.textContent = 'Close';
+
 	const meesages = openButton.parentElement.parentElement.lastElementChild;
 
-	// Makes time readable
+	// Makes the time readable
 	const times = messages.getElementsByTagName('time');
 	for (let item of times) {
 		item.textContent = new Date(item.textContent).toTimeString().slice(0, 5);
 	}
+
 	messages.scrollTop = messages.scrollHeight;
 }
 
@@ -118,38 +121,43 @@ function closeChannel(closeButton) {
 
 
 // Event handlers
-function createNewChannel(event) {		
+function createNewChannel(event) {
+	const channelName = event.target.previousElementSibling.value.trim();
+
 	fetch('/', {
 		method: 'POST',
-		body: event.target.previousElementSibling.value.trim()
+		body: channelName
 	})
 		.then(response => response.json())
 		.then(result => {
-			if ('success' in result) {
+			if (result.success) {
+				event.target.previousElementSibling.value = '';
+
 				// Add the new channel node
 				const channel = document.createElement('div');
 				channel.className = 'channel';
+
 				const channelHeader = document.createElement('div');
 				channelHeader.className = 'channel__header';
-				const name = document.createElement('h2');
-				const openButton = document.createElement('button');
 
-				name.textContent = event.target.previousElementSibling.value;
+				const name = document.createElement('h2');
+				name.textContent = channelName;
+
+				const openButton = document.createElement('button');
 				openButton.textContent = 'Open';
 				openButton.dataset.open = 'false';
-				openButton.dataset.channelName = event.target.previousElementSibling.value;
-				event.target.previousElementSibling.value = '';
+				openButton.dataset.channelName = channelName;
 
 				channelHeader.append(name);
 				channelHeader.append(openButton);
 				channel.append(channelHeader);
-				
 				document.querySelector('#channel-list').prepend(channel);
 
+				// Open the channel
 				openButton.dispatchEvent(new Event('click', {bubbles: true}));
 			} else {
 				// Show the error
-				let error = document.createElement('div');
+				const error = document.createElement('div');
 				error.className = 'flash';
 				error.textContent = result.error;
 				document.querySelector('header').prepend(error);
@@ -188,7 +196,9 @@ function openCloseChannel(event) {
 			// Close a channel
 			socket.disconnect();
 			socket.removeListener(`announce message ${channelName}`, receiveMessage);
+
 			closeChannel(toggleButton);
+
 			localStorage.removeItem('channel');
 		}
 
@@ -204,8 +214,10 @@ function receiveMessage(data) {
 	const message = document.createElement('div');
 	message.className = 'message';
 	message.innerHTML = `<h3>${data.username}</h3><p>${data.text}</p><time>${date}</time>`;
+
 	const messages = document.getElementById('messages');
 	messages.append(message);
+
 	messages.scrollTop = messages.scrollHeight;
 }
 

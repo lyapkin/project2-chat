@@ -20,10 +20,10 @@ def index():
 	if request.method == 'POST':
 		channel_name = request.data.decode('utf-8')
 		if channel_name in channels:
-			return jsonify(error='The channel with this name exists, choose another name')
+			return jsonify(success=False, error='The channel with this name exists, choose another name')
 		
 		channels[channel_name] = []
-		return jsonify(success='The channel is created')
+		return jsonify(success=True)
 	
 	return render_template('base.html', channels=channels)
 
